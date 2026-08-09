@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { addAgent, removeAgent } from "@/lib/data";
+import { addAgent, removeAgent, setAgentActive } from "@/lib/data";
+import { useToast } from "@/components/ui/Toast";
 import {
   Dialog,
   Field,
@@ -104,6 +105,80 @@ function AddAgentDialog({ open, onClose }: { open: boolean; onClose: () => void 
   );
 }
 
+/**
+ * Take someone out of the rotation without deleting them.
+ *
+ * Removal is permanent and loses their history; what an owner actually needs
+ * most weeks is "Yusuf is on leave until the 20th, stop sending him leads".
+ * The data already had an `active` flag with no way to set it.
+ */
+export function ActiveToggle({
+  id,
+  name,
+  active,
+  lastActive,
+}: {
+  id: string;
+  name: string;
+  active: boolean;
+  lastActive: boolean;
+}) {
+  const router = useRouter();
+  const notify = useToast();
+  const [on, setOn] = useState(active);
+  const [pending, setPending] = useState(false);
+
+  const blocked = on && lastActive;
+
+  async function toggle() {
+    if (pending || blocked) return;
+    const next = !on;
+    setOn(next);
+    setPending(true);
+    try {
+      await setAgentActive(id, next);
+      notify(
+        next
+          ? `${name} is back in the rotation.`
+          : `${name} won't be assigned new leads.`,
+      );
+      router.refresh();
+    } catch {
+      setOn(!next);
+      notify("Couldn't change that.", "error");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      aria-label={`${name} receives new leads`}
+      onClick={toggle}
+      disabled={pending || blocked}
+      title={
+        blocked
+          ? "You need at least one active agent for leads to be assigned to."
+          : on
+            ? "In the round-robin. Click to pause."
+            : "Paused. Click to put back in the rotation."
+      }
+      className="relative shrink-0 w-[38px] h-[22px] rounded-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      style={{
+        background: on ? "var(--color-stage-ready)" : "var(--color-edge)",
+      }}
+    >
+      <span
+        className="absolute top-[3px] w-4 h-4 rounded-full bg-white transition-[left] duration-200"
+        style={{ left: on ? 19 : 3, boxShadow: "0 1px 3px rgba(28,25,23,.28)" }}
+      />
+    </button>
+  );
+}
+
 export function RemoveAgentButton({
   id,
   name,
@@ -134,6 +209,7 @@ export function RemoveAgentButton({
       size="sm"
       onRun={() => removeAgent(id)}
       pendingLabel="Removing…"
+      toast={`${name} removed from the team.`}
       confirm={
         assigned > 0
           ? `Remove ${name}? Their ${assigned} assigned ${assigned === 1 ? "lead" : "leads"} will need reassigning.`

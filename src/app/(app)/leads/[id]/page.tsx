@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/Primitives";
 import { AgingClock, StageBadge } from "@/components/status/Status";
 import { ConversationActions } from "./ConversationActions";
+import { Composer } from "./Composer";
 import {
   formatBudgetRange,
   formatClock,
@@ -181,6 +182,14 @@ export default async function ConversationPage({
           <Card className="overflow-hidden">
             <Thread turns={lead.turns} owners={owners} agents={agents} now={now} />
           </Card>
+
+          <Composer
+            leadId={lead.id}
+            aiPaused={lead.aiPaused}
+            notes={lead.notes}
+            agents={agents}
+            customerPhone={lead.phone}
+          />
 
           <ConversationActions
             leadId={lead.id}

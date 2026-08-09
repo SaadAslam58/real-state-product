@@ -35,7 +35,7 @@ import {
 } from "@/components/status/Status";
 import { SearchBox, FilterSelect, ClearFilters } from "@/components/ui/Interactive";
 import { ReassignSelect } from "./ReassignSelect";
-import { formatPhone, formatRelative } from "@/lib/format";
+import { formatBudgetRange, formatPhone, formatRelative } from "@/lib/format";
 import { isDataError, type AttentionState, type Stage } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Leads" };
@@ -128,16 +128,21 @@ export default async function LeadsPage({
             <thead>
               <tr>
                 <Th>Contact</Th>
-                <Th>Property</Th>
+                <Th>Last message</Th>
+                <Th align="right">Budget</Th>
                 <Th>Stage</Th>
                 <Th>Assigned</Th>
-                <Th align="right">Last message</Th>
+                <Th align="right">When</Th>
               </tr>
             </thead>
             <tbody>
               {page.items.map((lead) => {
                 const attention = attentionFor(lead, threshold, now);
                 const listing = lead.listingId ? listings[lead.listingId] : null;
+                const budget = formatBudgetRange(
+                  lead.extraction.budgetMinAED,
+                  lead.extraction.budgetMaxAED,
+                );
 
                 return (
                   <tr
@@ -158,16 +163,59 @@ export default async function LeadsPage({
                       </Link>
                     </Td>
 
-                    <Td>
-                      {listing ? (
-                        <Link href="/listings" className="block group max-w-[26ch]">
-                          <span className="block truncate-1 group-hover:text-accent-bright">
-                            {listing.area}
+                    {/* The single biggest triage win: one line of what was
+                        actually said. Without it an owner opens all twelve rows
+                        to work out which one matters. */}
+                    <Td className="max-w-0 w-[38%]">
+                      <Link href={`/leads/${lead.id}`} className="block group">
+                        {lead.lastMessage ? (
+                          <span className="flex items-baseline gap-1.5">
+                            <span
+                              className="text-2xs font-semibold shrink-0"
+                              style={{
+                                color:
+                                  lead.lastMessage.from === "customer"
+                                    ? "var(--color-ember)"
+                                    : "var(--color-muted)",
+                              }}
+                            >
+                              {lead.lastMessage.from === "customer"
+                                ? "Them"
+                                : lead.lastMessage.from === "ai"
+                                  ? "AI"
+                                  : "You"}
+                            </span>
+                            <span className="truncate-1 text-ink-soft group-hover:text-ink">
+                              <UserText>{lead.lastMessage.preview}</UserText>
+                            </span>
                           </span>
-                          <Mono>{listing.reference}</Mono>
-                        </Link>
+                        ) : (
+                          <span className="text-muted text-xs">No messages yet</span>
+                        )}
+                        {listing ? (
+                          <span className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-xs text-muted truncate-1">
+                              {listing.area}
+                            </span>
+                            <Mono>{listing.reference}</Mono>
+                          </span>
+                        ) : (
+                          <span className="block text-xs text-muted mt-0.5">
+                            Property not identified yet
+                          </span>
+                        )}
+                      </Link>
+                    </Td>
+
+                    {/* A 21M Palm buyer and a 44k studio should not look the
+                        same in a list you triage by eye. */}
+                    <Td align="right">
+                      {budget ? (
+                        <span className="text-sm font-semibold text-ink whitespace-nowrap">
+                          {budget}
+                        </span>
                       ) : (
-                        <span className="text-muted text-xs">Not identified yet</span>
+                        <span className="text-xs text-muted">—</span>
                       )}
                     </Td>
 
@@ -245,11 +293,47 @@ export default async function LeadsPage({
                       ) : null}
                     </span>
 
-                    {listing ? (
-                      <span className="block text-xs text-muted mt-2 truncate-1">
-                        {listing.area} · {listing.reference}
+                    {lead.lastMessage ? (
+                      <span className="flex items-baseline gap-1.5 mt-2">
+                        <span
+                          className="text-2xs font-semibold shrink-0"
+                          style={{
+                            color:
+                              lead.lastMessage.from === "customer"
+                                ? "var(--color-ember)"
+                                : "var(--color-muted)",
+                          }}
+                        >
+                          {lead.lastMessage.from === "customer"
+                            ? "Them"
+                            : lead.lastMessage.from === "ai"
+                              ? "AI"
+                              : "You"}
+                        </span>
+                        <span className="truncate-1 text-xs text-ink-soft">
+                          <UserText>{lead.lastMessage.preview}</UserText>
+                        </span>
                       </span>
                     ) : null}
+
+                    <span className="flex items-center gap-2 mt-1.5">
+                      {listing ? (
+                        <span className="text-xs text-muted truncate-1">
+                          {listing.area} · {listing.reference}
+                        </span>
+                      ) : null}
+                      {formatBudgetRange(
+                        lead.extraction.budgetMinAED,
+                        lead.extraction.budgetMaxAED,
+                      ) ? (
+                        <span className="ml-auto text-xs font-semibold text-ink shrink-0">
+                          {formatBudgetRange(
+                            lead.extraction.budgetMinAED,
+                            lead.extraction.budgetMaxAED,
+                          )}
+                        </span>
+                      ) : null}
+                    </span>
                   </Link>
                 </li>
               );

@@ -12,6 +12,7 @@ import {
   SectionHeading,
 } from "@/components/ui/Primitives";
 import { CorrectionActions } from "./CorrectionActions";
+import { AddRuleButton, EditRuleButton } from "./AddRule";
 import { formatRelative } from "@/lib/format";
 import { isDataError } from "@/lib/types";
 
@@ -61,14 +62,18 @@ export default async function KnowledgePage({
 
   return (
     <div className="max-w-[880px] mx-auto flex flex-col gap-7">
-      <div>
-        <p className="t-eyebrow mb-1.5">How the AI learns</p>
-        <h1 className="t-display text-xl text-ink">Knowledge &amp; corrections</h1>
-        <p className="text-sm text-muted mt-2 max-w-[62ch] leading-relaxed">
-          When the AI gets something wrong, an agent flags it here. Once you approve a
-          correction it applies to every future conversation — not just the one it came
-          from. Nothing reaches the AI without a human approving it first.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="t-eyebrow mb-1.5">How the AI learns</p>
+          <h1 className="t-display text-xl text-ink">Knowledge &amp; corrections</h1>
+          <p className="text-sm text-muted mt-2 max-w-[62ch] leading-relaxed">
+            When the AI gets something wrong, an agent flags it here and you approve the
+            fix — it then applies to every future conversation, not just the one it came
+            from. You can also just tell it something directly, without waiting for it
+            to get that thing wrong first.
+          </p>
+        </div>
+        {canApproveCorrections(session) ? <AddRuleButton /> : null}
       </div>
 
       {/* ── Pending review ── */}
@@ -188,12 +193,17 @@ export default async function KnowledgePage({
                         {c.approvedAt ? `${formatRelative(c.approvedAt, now)} ago` : ""}
                       </p>
                     </div>
-                    <CorrectionActions
-                      id={c.id}
-                      correctAnswer={c.correctAnswer}
-                      canApprove={canApproveCorrections(session)}
-                      variant="approved"
-                    />
+                    {canApproveCorrections(session) ? (
+                      <span className="flex items-center gap-0.5 shrink-0">
+                        <EditRuleButton id={c.id} current={c.correctAnswer} />
+                        <CorrectionActions
+                          id={c.id}
+                          correctAnswer={c.correctAnswer}
+                          canApprove
+                          variant="approved"
+                        />
+                      </span>
+                    ) : null}
                   </li>
                 );
               })}

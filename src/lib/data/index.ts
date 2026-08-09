@@ -28,8 +28,10 @@ import {
   FILTERED_TODAY,
   LEADS,
   LISTINGS,
+  NOTES,
   threadFor,
 } from "./fixtures";
+import type { Lead as LeadType, Turn } from "../types";
 
 /**
  * ══════════════════════════════════════════════════════════════════════════
@@ -58,6 +60,44 @@ import {
  */
 
 const PAGE_SIZE = 25;
+
+/**
+ * The newest turn, flattened to one line for the table.
+ *
+ * Handoff and resume markers are skipped — "Handed to Sara" is a system event,
+ * not something anyone said, and showing it as the last message hides what the
+ * customer actually wants.
+ */
+function previewOf(turns: Turn[]): LeadType["lastMessage"] {
+  for (let i = turns.length - 1; i >= 0; i--) {
+    const t = turns[i];
+    if (!t) continue;
+    if (t.kind === "customer" || t.kind === "ai" || t.kind === "agent") {
+      return {
+        from: t.kind,
+        preview: t.text.replace(/\s+/g, " ").trim(),
+      };
+    }
+    if (t.kind === "image") {
+      return {
+        from: t.author === "customer" ? "customer" : "ai",
+        preview: t.caption ? `📷 ${t.caption}` : "📷 Photo",
+      };
+    }
+  }
+  return null;
+}
+
+/** Fixture seeds → full Lead. Both extra fields are derived, never stored twice. */
+function hydrate(seed: (typeof LEADS)[number]): LeadType {
+  return {
+    ...seed,
+    lastMessage: previewOf(threadFor(seed.id)),
+    notes: NOTES[seed.id] ?? [],
+  };
+}
+
+const HYDRATED: LeadType[] = LEADS.map(hydrate);
 
 // ─────────────────────────────────────────────────────────────
 // Session
@@ -175,7 +215,7 @@ export async function getLeads(
 
   // Role scoping first — an agent must never be able to page through, filter
   // into, or search up a colleague's lead.
-  let rows = scopeLeads(session, LEADS);
+  let rows = scopeLeads(session, HYDRATED);
 
   if (query.stage && query.stage !== "all") {
     rows = rows.filter((l) => l.stage === query.stage);
@@ -233,7 +273,7 @@ export async function getLead(
 ): Promise<LeadDetail> {
   await applyScenario(scenario);
 
-  const lead = LEADS.find((l) => l.id === id);
+  const lead = HYDRATED.find((l) => l.id === id);
   if (!lead) throw new DataError("not_found", "That lead no longer exists.");
 
   // The check the server will do for real. Today it stops the obvious case; it
@@ -303,6 +343,26 @@ export async function getListingMap(): Promise<Record<string, Listing>> {
   return Object.fromEntries(LISTINGS.map((l) => [l.id, l]));
 }
 
+/**
+ * How many leads each listing has generated, and how many are still open.
+ *
+ * This is the question an agency owner asks first — "what should I get more
+ * of?" — and it is answerable entirely from data the product already has. A
+ * listings table without it is an inventory list; with it, it's a demand report.
+ */
+export async function getListingDemand(): Promise<
+  Record<string, { total: number; open: number }>
+> {
+  const out: Record<string, { total: number; open: number }> = {};
+  for (const lead of HYDRATED) {
+    if (!lead.listingId) continue;
+    const row = (out[lead.listingId] ??= { total: 0, open: 0 });
+    row.total += 1;
+    if (lead.stage !== "closed") row.open += 1;
+  }
+  return out;
+}
+
 // ─────────────────────────────────────────────────────────────
 // Corrections
 // ─────────────────────────────────────────────────────────────
@@ -330,6 +390,7 @@ export async function getDashboardSummary(
   if (isEmptyScenario(scenario)) {
     return {
       newLeadsToday: 0,
+      newLeadsYesterday: 0,
       awaitingHandoff: 0,
       overdueHandoffs: 0,
       activeConversations: 0,
@@ -340,11 +401,15 @@ export async function getDashboardSummary(
   }
 
   const threshold = AGENCY.overdueThresholdMinutes;
-  const rows = scopeLeads(session, LEADS);
+  const rows = scopeLeads(session, HYDRATED);
   const attention = rows.map((l) => attentionFor(l, threshold));
 
   return {
     newLeadsToday: rows.filter((l) => minutesSince(l.createdAt) < 24 * 60).length,
+    newLeadsYesterday: rows.filter((l) => {
+      const m = minutesSince(l.createdAt);
+      return m >= 24 * 60 && m < 48 * 60;
+    }).length,
     awaitingHandoff: attention.filter((a) => a !== "none").length,
     overdueHandoffs: attention.filter((a) => a === "handoff_overdue").length,
     activeConversations: rows.filter(
@@ -375,7 +440,7 @@ export async function getAgentStats(
   const threshold = AGENCY.overdueThresholdMinutes;
 
   return AGENTS.filter((a) => a.active).map((agent) => {
-    const assigned = LEADS.filter((l) => l.assignedAgentId === agent.id);
+    const assigned = HYDRATED.filter((l) => l.assignedAgentId === agent.id);
 
     // Response time = handoff requested → agent acknowledged.
     const responded = assigned.filter(
@@ -466,6 +531,56 @@ export async function flagConversation(input: {
 export async function approveCorrection(id: string): Promise<void> {
   await settle();
   void id;
+}
+
+/**
+ * Write a rule straight into the AI's knowledge, without waiting for it to get
+ * something wrong first.
+ *
+ * The flag-then-approve loop only teaches the AI things it has already fumbled
+ * in front of a customer. An owner knows "we don't handle commercial" on day
+ * one and should be able to just say so.
+ */
+export async function createCorrection(input: {
+  correctAnswer: string;
+  note: string;
+}): Promise<void> {
+  await settle();
+  void input;
+}
+
+/** Rules change — Marina studios were 45k, then 55k. Editable, per the brief. */
+export async function updateCorrection(
+  id: string,
+  correctAnswer: string,
+): Promise<void> {
+  await settle();
+  void id;
+  void correctAnswer;
+}
+
+/**
+ * Take someone out of the round-robin without deleting their history — for a
+ * holiday, sick leave, or a month on another project.
+ */
+export async function setAgentActive(id: string, active: boolean): Promise<void> {
+  await settle();
+  void id;
+  void active;
+}
+
+/** Reply to the customer. Only permitted while the agent holds the thread. */
+export async function sendMessage(leadId: string, body: string): Promise<void> {
+  await settle(700);
+  void leadId;
+  void body;
+}
+
+/** Internal note. Never leaves the dashboard. */
+export async function addNote(leadId: string, body: string): Promise<void> {
+  await settle();
+  void leadId;
+  void body;
 }
 
 export async function dismissCorrection(id: string): Promise<void> {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getAgency, getListings } from "@/lib/data";
+import Link from "next/link";
+import { getAgency, getListingDemand, getListings } from "@/lib/data";
 import { parseScenario } from "@/lib/data/scenarios";
 import { LISTING_STATUS_LABEL } from "@/lib/status";
 import {
@@ -56,6 +57,7 @@ export default async function ListingsPage({
   };
 
   const agency = await getAgency(scenario).catch(() => null);
+  const demand = await getListingDemand().catch(() => ({}) as Record<string, { total: number; open: number }>);
 
   let body: React.ReactNode;
   try {
@@ -118,6 +120,7 @@ export default async function ListingsPage({
                 <Th>Property</Th>
                 <Th align="right">Price</Th>
                 <Th>Beds / baths</Th>
+                <Th align="right">Inquiries</Th>
                 <Th>Source</Th>
                 <Th>Status</Th>
                 <Th align="right">Actions</Th>
@@ -172,6 +175,31 @@ export default async function ListingsPage({
                     </span>
                   </Td>
 
+                  {/* The question an owner asks first: what should I get more
+                      of? Answerable from data the product already has. */}
+                  <Td align="right">
+                    {demand[l.id] ? (
+                      <Link
+                        href={`/leads?q=${encodeURIComponent(l.reference)}`}
+                        className="inline-flex items-baseline gap-1 group"
+                      >
+                        <span className="text-sm font-semibold text-ink group-hover:text-accent-bright">
+                          {demand[l.id]!.total}
+                        </span>
+                        {demand[l.id]!.open > 0 ? (
+                          <span
+                            className="text-2xs font-semibold"
+                            style={{ color: "var(--color-stage-new)" }}
+                          >
+                            {demand[l.id]!.open} open
+                          </span>
+                        ) : null}
+                      </Link>
+                    ) : (
+                      <span className="text-xs text-muted">—</span>
+                    )}
+                  </Td>
+
                   <Td>
                     <SourceTag source={l.source} />
                   </Td>
@@ -210,6 +238,12 @@ export default async function ListingsPage({
                         {formatPrice(l.priceAED, l.pricePeriod)}
                       </span>
                       <SourceTag source={l.source} />
+                      {demand[l.id] ? (
+                        <span className="text-xs text-muted ml-auto">
+                          {demand[l.id]!.total}{" "}
+                          {demand[l.id]!.total === 1 ? "inquiry" : "inquiries"}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>

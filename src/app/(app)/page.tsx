@@ -197,6 +197,7 @@ export default async function DashboardPage({
             label="New leads today"
             value={summary.newLeadsToday}
             href="/leads?stage=new"
+            delta={summary.newLeadsToday - summary.newLeadsYesterday}
             foot={
               summary.filteredToday > 0
                 ? `${summary.filteredToday} messages filtered as not property-related`
@@ -455,12 +456,15 @@ function Kpi({
   value,
   href,
   foot,
+  delta,
   tone = "default",
 }: {
   label: string;
   value: number;
   href: string;
   foot?: string;
+  /** Change vs the equivalent previous period. A count with no baseline is decoration. */
+  delta?: number;
   tone?: "default" | "ember";
 }) {
   return (
@@ -474,11 +478,27 @@ function Kpi({
       }
     >
       <p className="t-eyebrow mb-2">{label}</p>
-      <p
-        className="t-metric"
-        style={{ color: tone === "ember" ? "var(--color-ember)" : "var(--color-ink)" }}
-      >
-        {value}
+      <p className="flex items-baseline gap-2">
+        <span
+          className="t-metric"
+          style={{ color: tone === "ember" ? "var(--color-ember)" : "var(--color-ink)" }}
+        >
+          {value}
+        </span>
+        {delta !== undefined && delta !== 0 ? (
+          <span
+            className="text-xs font-semibold whitespace-nowrap"
+            style={{
+              color:
+                delta > 0 ? "var(--color-stage-ready)" : "var(--color-muted)",
+            }}
+            title="Compared with the same time yesterday"
+          >
+            {delta > 0 ? "▲" : "▼"} {Math.abs(delta)} vs yesterday
+          </span>
+        ) : delta === 0 ? (
+          <span className="text-xs text-muted whitespace-nowrap">same as yesterday</span>
+        ) : null}
       </p>
       {foot ? <p className="text-xs text-muted mt-1.5 leading-snug">{foot}</p> : null}
     </Link>

@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useState, useTransition, type ReactNode } from "react";
 import { buttonClass } from "./Primitives";
+import { useToast } from "./Toast";
 
 /**
  * Client islands. Everything that needs state, a handler, or the URL.
@@ -31,6 +32,7 @@ export function PendingButton({
   className = "",
   confirm,
   disabled,
+  toast,
 }: {
   onRun: () => Promise<void>;
   children: ReactNode;
@@ -41,10 +43,13 @@ export function PendingButton({
   /** When set, the user must confirm before the action runs. */
   confirm?: string;
   disabled?: boolean;
+  /** Receipt shown on success. Every mutation should have one. */
+  toast?: string;
 }) {
   const [pending, setPending] = useState(false);
   const [, startTransition] = useTransition();
   const router = useRouter();
+  const notify = useToast();
 
   async function run() {
     if (pending || disabled) return;
@@ -52,7 +57,10 @@ export function PendingButton({
     setPending(true);
     try {
       await onRun();
+      if (toast) notify(toast);
       startTransition(() => router.refresh());
+    } catch {
+      notify("That didn't go through. Try again.", "error");
     } finally {
       setPending(false);
     }

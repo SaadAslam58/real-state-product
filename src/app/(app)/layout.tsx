@@ -4,6 +4,7 @@ import { getSession, getDashboardSummary, getAgency } from "@/lib/data";
 import { visibleNav } from "@/lib/rbac";
 import { Avatar } from "@/components/ui/Primitives";
 import { PauseBanner } from "@/components/ui/Interactive";
+import { ToastProvider } from "@/components/ui/Toast";
 
 /**
  * The app shell. Spine on the left (bottom tab bar on a phone), a thin top bar,
@@ -31,6 +32,7 @@ export default async function AppLayout({
   const nav = visibleNav(session);
 
   return (
+    <ToastProvider>
     <div className="flex min-h-screen">
       <Spine
         items={nav}
@@ -63,5 +65,6 @@ export default async function AppLayout({
         pendingCorrections={summary?.pendingCorrections ?? 0}
       />
     </div>
+    </ToastProvider>
   );
 }

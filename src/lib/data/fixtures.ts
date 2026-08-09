@@ -4,6 +4,7 @@ import type {
   Agent,
   Correction,
   Lead,
+  LeadNote,
   Listing,
   Turn,
 } from "../types";
@@ -726,7 +727,15 @@ const threads: Record<string, Turn[]> = {
 // Leads
 // ─────────────────────────────────────────────────────────────
 
-export const LEADS: Lead[] = [
+/**
+ * Seeds, not finished Leads. `lastMessage` is derived from the thread and
+ * `notes` come from the map below — a real backend would denormalise both, and
+ * duplicating them by hand across twelve fixtures would guarantee they drift
+ * out of sync with the threads they describe.
+ */
+type LeadSeed = Omit<Lead, "lastMessage" | "notes">;
+
+export const LEADS: LeadSeed[] = [
   {
     id: "ld_001",
     contactName: "Faisal Rahman",
@@ -1008,6 +1017,34 @@ export const LEADS: Lead[] = [
     messageCount: 2,
   },
 ];
+
+/** Internal notes, keyed by lead. Never visible to the customer. */
+export const NOTES: Record<string, LeadNote[]> = {
+  ld_001: [
+    {
+      id: "n1",
+      agentId: "ag_owner",
+      at: ago(150),
+      body: "Second time he's asked about Sparkle Tower. Serious — call him, don't message.",
+    },
+  ],
+  ld_004: [
+    {
+      id: "n2",
+      agentId: "ag_lena",
+      at: ago(4_050),
+      body: "Flying in Tuesday. Book Sidra 2 and two Ranches villas back to back, he only has one afternoon.",
+    },
+  ],
+  ld_007: [
+    {
+      id: "n3",
+      agentId: "ag_lena",
+      at: ago(320),
+      body: "JBR only, wouldn't consider anything else. Add her to the list for when Sadaf frees up.",
+    },
+  ],
+};
 
 export function threadFor(leadId: string): Turn[] {
   return (

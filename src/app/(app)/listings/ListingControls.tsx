@@ -295,6 +295,7 @@ export function ListingRowActions({
         tone="ghost"
         size="sm"
         onRun={() => archiveListing(id)}
+        toast={`"${title}" archived. The AI won't offer it any more.`}
         confirm={`Archive "${title}"? The AI will stop offering it to customers.`}
         pendingLabel="…"
       >

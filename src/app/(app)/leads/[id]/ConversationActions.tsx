@@ -2,12 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  flagConversation,
-  resolveLead,
-  resumeAI,
-  takeOver,
-} from "@/lib/data";
+import { flagConversation, resolveLead, resumeAI } from "@/lib/data";
 import {
   Dialog,
   Field,
@@ -46,25 +41,19 @@ export function ConversationActions({
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 mt-4">
+        {/* Take over lives in the composer — it's only meaningful next to
+            somewhere to type. Handing the thread back belongs here. */}
         {aiPaused ? (
           <PendingButton
             tone="secondary"
             onRun={() => resumeAI(leadId)}
             pendingLabel="Resuming…"
+            toast="AI is handling this thread again."
           >
             <IconPlay />
             Resume AI handling
           </PendingButton>
-        ) : (
-          <PendingButton
-            tone="primary"
-            onRun={() => takeOver(leadId)}
-            pendingLabel="Taking over…"
-          >
-            <IconHand />
-            Take over
-          </PendingButton>
-        )}
+        ) : null}
 
         {stage !== "closed" ? (
           <button
@@ -324,20 +313,6 @@ function ResolveDialog({
 }
 
 // ── Icons ──
-
-function IconHand() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M8 11V5.5a1.5 1.5 0 0 1 3 0V11m0 0V4.5a1.5 1.5 0 0 1 3 0V11m0 0V6.5a1.5 1.5 0 0 1 3 0V14a6 6 0 0 1-6 6h-1a6 6 0 0 1-5.2-3l-1.5-2.6a1.5 1.5 0 0 1 2.4-1.8L8 14.5V11Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 function IconPlay() {
   return (

@@ -15,7 +15,7 @@ import {
   Th,
   CardList,
 } from "@/components/ui/Primitives";
-import { AddAgentButton, RemoveAgentButton } from "./TeamControls";
+import { ActiveToggle, AddAgentButton, RemoveAgentButton } from "./TeamControls";
 import { formatPhone } from "@/lib/format";
 import { isDataError } from "@/lib/types";
 
@@ -106,6 +106,7 @@ export default async function TeamPage({
                 <Th>Contact</Th>
                 <Th align="right">Assigned</Th>
                 <Th align="right">Avg reply</Th>
+                <Th align="center">Taking leads</Th>
                 <Th align="right" />
               </tr>
             </thead>
@@ -145,6 +146,18 @@ export default async function TeamPage({
                         {s?.avgResponseMinutes == null ? "—" : `${s.avgResponseMinutes}m`}
                       </span>
                     </Td>
+                    <Td align="center">
+                      {a.role === "owner" ? (
+                        <span className="text-xs text-muted">—</span>
+                      ) : (
+                        <ActiveToggle
+                          id={a.id}
+                          name={a.name}
+                          active={a.active}
+                          lastActive={activeCount <= 1}
+                        />
+                      )}
+                    </Td>
                     <Td align="right">
                       {a.role === "owner" ? (
                         <span className="text-xs text-muted">Owner</span>
@@ -178,10 +191,10 @@ export default async function TeamPage({
                     </p>
                   </div>
                   {a.role !== "owner" ? (
-                    <RemoveAgentButton
+                    <ActiveToggle
                       id={a.id}
                       name={a.name}
-                      assigned={s?.assignedCount ?? 0}
+                      active={a.active}
                       lastActive={activeCount <= 1}
                     />
                   ) : null}

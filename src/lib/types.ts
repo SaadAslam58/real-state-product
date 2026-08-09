@@ -189,6 +189,30 @@ export interface Lead {
   aiPaused: boolean;
   extraction: Extraction;
   messageCount: number;
+  /**
+   * One-line preview of the newest turn, denormalised onto the lead.
+   *
+   * Without this the leads table is twelve rows of names and an owner has to
+   * open every one to triage. With it, the table is scannable — which is the
+   * whole job of that screen.
+   */
+  lastMessage: {
+    from: "customer" | "ai" | "agent";
+    preview: string;
+  } | null;
+  /**
+   * Internal notes. Never sent to the customer — "he's a time-waster, third
+   * time asking" is exactly the kind of thing agents need to record and exactly
+   * the kind of thing that must never reach WhatsApp.
+   */
+  notes: LeadNote[];
+}
+
+export interface LeadNote {
+  id: string;
+  agentId: string;
+  at: string;
+  body: string;
 }
 
 /** A lead plus its thread. Returned by `getLead`; the list view does not need turns. */
@@ -365,6 +389,8 @@ export interface ActivityItem {
 
 export interface DashboardSummary {
   newLeadsToday: number;
+  /** Same window, previous day. A count with no baseline is decoration. */
+  newLeadsYesterday: number;
   awaitingHandoff: number;
   overdueHandoffs: number;
   activeConversations: number;
