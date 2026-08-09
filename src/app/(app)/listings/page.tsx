@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getAgency, getListingDemand, getListings } from "@/lib/data";
@@ -18,6 +17,7 @@ import {
   ButtonLink,
 } from "@/components/ui/Primitives";
 import { SourceTag, sourceSpineStyle } from "@/components/status/Status";
+import { ListingThumb, hasNoPhoto } from "@/components/listings/ListingThumb";
 import { SearchBox, FilterSelect, ClearFilters } from "@/components/ui/Interactive";
 import { SyncBar, AddListingButton, ListingRowActions } from "./ListingControls";
 import { formatPrice, formatRelative, formatSpec } from "@/lib/format";
@@ -142,15 +142,12 @@ export default async function ListingsPage({
                       className="absolute left-0 top-0 bottom-0 w-[3px]"
                       style={sourceSpineStyle(l.source)}
                     />
-                    <span className="block relative w-16 h-12 rounded-md overflow-hidden bg-sunk ml-1">
-                      <Image
-                        src={l.photos[0] ?? ""}
-                        alt=""
-                        fill
-                        sizes="64px"
-                        className="object-cover"
-                      />
-                    </span>
+                    <ListingThumb
+                      photos={l.photos}
+                      alt=""
+                      sizes="64px"
+                      className="w-16 h-12 ml-1"
+                    />
                   </Td>
 
                   <Td>
@@ -160,6 +157,19 @@ export default async function ListingsPage({
                     <span className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs text-muted">{l.area}</span>
                       <Mono>{l.reference}</Mono>
+                      {/* Every listing needs a photo — the AI sends it directly in
+                          WhatsApp. One with none can't, so flag it here too, not
+                          just in the thumbnail, since a thumbnail can scroll past
+                          unnoticed in a long table. */}
+                      {hasNoPhoto(l.photos) ? (
+                        <span
+                          className="text-2xs font-semibold whitespace-nowrap"
+                          style={{ color: "var(--color-ember)" }}
+                          title="The AI can't show this property in WhatsApp until a photo is added"
+                        >
+                          needs a photo
+                        </span>
+                      ) : null}
                     </span>
                   </Td>
 
@@ -225,9 +235,12 @@ export default async function ListingsPage({
                   style={sourceSpineStyle(l.source)}
                 />
                 <div className="flex gap-3 pl-5 pr-4 py-3.5">
-                  <span className="relative w-[72px] h-[54px] rounded-md overflow-hidden bg-sunk shrink-0">
-                    <Image src={l.photos[0] ?? ""} alt="" fill sizes="72px" className="object-cover" />
-                  </span>
+                  <ListingThumb
+                    photos={l.photos}
+                    alt=""
+                    sizes="72px"
+                    className="w-[72px] h-[54px] shrink-0"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold text-sm text-ink truncate-1">{l.title}</p>
                     <p className="text-xs text-muted mt-0.5">

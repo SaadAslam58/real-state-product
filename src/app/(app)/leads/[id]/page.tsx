@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ListingThumb } from "@/components/listings/ListingThumb";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getRole } from "@/lib/session";
@@ -273,15 +274,13 @@ export default async function ConversationPage({
               <div className="px-4 py-3 border-b border-hairline">
                 <p className="t-eyebrow">Property discussed</p>
               </div>
-              <div className="relative aspect-[16/10] bg-sunk">
-                <Image
-                  src={listing.photos[0] ?? ""}
-                  alt={listing.title}
-                  fill
-                  sizes="312px"
-                  className="object-cover"
-                />
-              </div>
+              <ListingThumb
+                photos={listing.photos}
+                alt={listing.title}
+                sizes="312px"
+                className="w-full aspect-[16/10]"
+                rounded=""
+              />
               <div className="px-4 py-3">
                 <p className="text-sm font-semibold text-ink leading-snug">
                   {listing.title}
