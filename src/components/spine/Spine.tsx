@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { GehoxMark } from "@/components/brand/GehoxMark";
 import { NavIcon } from "./Icons";
-import { NAV, isActive, type NavItem } from "./nav";
+import { isActive, type NavItem } from "./nav";
 import type { Role } from "@/lib/types";
 
 /**
@@ -22,16 +22,20 @@ import type { Role } from "@/lib/types";
  *   < md   hidden; the bottom tab bar takes over
  */
 export function Spine({
-  role,
+  items,
   overdueCount,
   pendingCorrections,
 }: {
-  role: Role;
+  /**
+   * Already filtered by permission in the layout, server-side. An agent's
+   * browser never receives the Team route at all — filtering here would ship
+   * it to the client and merely hide it.
+   */
+  items: NavItem[];
   overdueCount: number;
   pendingCorrections: number;
 }) {
   const pathname = usePathname();
-  const items = NAV.filter((i) => !i.ownerOnly || role === "owner");
 
   return (
     <aside
@@ -136,20 +140,19 @@ function SpineLink({
  * Targets are 56px tall so they clear the 44px minimum with room for a thumb.
  */
 export function MobileTabBar({
-  role,
+  items,
   overdueCount,
   pendingCorrections,
 }: {
-  role: Role;
+  items: NavItem[];
   overdueCount: number;
   pendingCorrections: number;
 }) {
   const pathname = usePathname();
   const [moreOpen, setMoreOpen] = useState(false);
 
-  const all = NAV.filter((i) => !i.ownerOnly || role === "owner");
-  const primary = all.filter((i) => i.primary);
-  const rest = all.filter((i) => !i.primary);
+  const primary = items.filter((i) => i.primary);
+  const rest = items.filter((i) => !i.primary);
 
   return (
     <>

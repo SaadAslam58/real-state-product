@@ -1,6 +1,7 @@
 import { Spine, MobileTabBar, RoleSwitcher } from "@/components/spine/Spine";
 import { getRole } from "@/lib/session";
 import { getSession, getDashboardSummary, getAgency } from "@/lib/data";
+import { visibleNav } from "@/lib/rbac";
 import { Avatar } from "@/components/ui/Primitives";
 import { PauseBanner } from "@/components/ui/Interactive";
 
@@ -26,10 +27,13 @@ export default async function AppLayout({
     getAgency().catch(() => null),
   ]);
 
+  // One permission decision, server-side, shared by both navs.
+  const nav = visibleNav(session);
+
   return (
     <div className="flex min-h-screen">
       <Spine
-        role={role}
+        items={nav}
         overdueCount={summary?.overdueHandoffs ?? 0}
         pendingCorrections={summary?.pendingCorrections ?? 0}
       />
@@ -54,7 +58,7 @@ export default async function AppLayout({
       </div>
 
       <MobileTabBar
-        role={role}
+        items={nav}
         overdueCount={summary?.overdueHandoffs ?? 0}
         pendingCorrections={summary?.pendingCorrections ?? 0}
       />

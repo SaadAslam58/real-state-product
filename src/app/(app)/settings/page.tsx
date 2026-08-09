@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getRole } from "@/lib/session";
 import { getAgency, getSession } from "@/lib/data";
+import { canEditAgencySettings } from "@/lib/rbac";
 import { parseScenario } from "@/lib/data/scenarios";
 import { Card, ErrorSurface, Mono, SectionHeading } from "@/components/ui/Primitives";
 import {
@@ -39,7 +40,7 @@ export default async function SettingsPage({
     );
   }
 
-  const isOwner = role === "owner";
+  const isOwner = canEditAgencySettings(session);
 
   return (
     <div className="max-w-[720px] mx-auto flex flex-col gap-7">

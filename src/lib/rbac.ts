@@ -1,4 +1,5 @@
 import type { Lead, Session } from "./types";
+import { NAV, type NavItem } from "@/components/spine/nav";
 
 /**
  * Lead visibility scoping.
@@ -64,4 +65,13 @@ export function canEditAgencySettings(session: Session): boolean {
 /** Both roles can reassign: owners reallocate, agents hand off when they are stuck. */
 export function canReassignLead(): boolean {
   return true;
+}
+
+/**
+ * Which destinations this session may reach. Computed server-side in the app
+ * layout so an agent's browser is never sent a route they cannot use — filtering
+ * in the client component would ship it and merely hide it.
+ */
+export function visibleNav(session: Session): NavItem[] {
+  return NAV.filter((item) => !item.ownerOnly || canManageTeam(session));
 }

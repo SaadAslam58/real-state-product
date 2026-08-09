@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getRole } from "@/lib/session";
-import { getAgentMap, getCorrections } from "@/lib/data";
+import { getAgentMap, getCorrections, getSession } from "@/lib/data";
+import { canApproveCorrections } from "@/lib/rbac";
 import { parseScenario } from "@/lib/data/scenarios";
 import {
   Avatar,
@@ -32,6 +33,7 @@ export default async function KnowledgePage({
   const sp = await searchParams;
   const scenario = parseScenario(sp.scenario);
   const role = await getRole();
+  const session = await getSession(role);
   const now = new Date();
 
   let corrections, agents;
@@ -139,7 +141,7 @@ export default async function KnowledgePage({
                     <CorrectionActions
                       id={c.id}
                       correctAnswer={c.correctAnswer}
-                      canApprove={role === "owner"}
+                      canApprove={canApproveCorrections(session)}
                     />
                   </Card>
                 </li>
@@ -189,7 +191,7 @@ export default async function KnowledgePage({
                     <CorrectionActions
                       id={c.id}
                       correctAnswer={c.correctAnswer}
-                      canApprove={role === "owner"}
+                      canApprove={canApproveCorrections(session)}
                       variant="approved"
                     />
                   </li>
@@ -199,7 +201,7 @@ export default async function KnowledgePage({
           </Card>
         )}
 
-        {role !== "owner" ? (
+        {!canApproveCorrections(session) ? (
           <p className="text-xs text-muted mt-3">
             Only the agency owner can approve or remove corrections. You can flag any
             conversation from its detail screen.

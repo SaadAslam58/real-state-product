@@ -6,6 +6,7 @@ import { getRole } from "@/lib/session";
 import { getAgency, getAgentMap, getLead, getListingMap, getSession } from "@/lib/data";
 import { parseScenario } from "@/lib/data/scenarios";
 import { attentionFor } from "@/lib/status";
+import { canApproveCorrections } from "@/lib/rbac";
 import {
   Avatar,
   Card,
@@ -185,7 +186,7 @@ export default async function ConversationPage({
             leadId={lead.id}
             aiPaused={lead.aiPaused}
             stage={lead.stage}
-            canApprove={role === "owner"}
+            canApprove={canApproveCorrections(session)}
             lastAiMessage={
               [...lead.turns].reverse().find((t) => t.kind === "ai" || t.kind === "image")
                 ? (([...lead.turns].reverse().find((t) => t.kind === "ai") as

@@ -17,6 +17,10 @@ TypeScript strict with `noUncheckedIndexedAccess`. Node 20+.
   page, not the dataset, and the screen silently lies.
 - **Take status colour from `src/lib/status.ts`.** It is the only source. Badges,
   filter chips, dashboard counts, and the conversation rail all read from it.
+- **Take every permission decision from `src/lib/rbac.ts`.** `isOwner`,
+  `canManageTeam`, `canApproveCorrections`, `canEditAgencySettings`, `scopeLeads`,
+  `visibleNav`. Never write `role === "owner"` in a screen — that scatters the
+  permission model across call sites and makes adding a third role a hunt.
 - **End every switch over a union with `assertNever`** (`src/lib/assert.ts`). Without
   it a new `Turn` kind renders as a blank bubble instead of failing the build.
 - **Render customer-authored text through `<UserText>`.** It carries `dir="auto"` so

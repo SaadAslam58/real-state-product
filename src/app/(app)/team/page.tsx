@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getRole } from "@/lib/session";
-import { getAgentStats, getTeam } from "@/lib/data";
+import { getAgentStats, getSession, getTeam } from "@/lib/data";
+import { canManageTeam } from "@/lib/rbac";
 import { parseScenario } from "@/lib/data/scenarios";
 import {
   Avatar,
@@ -28,8 +29,9 @@ export default async function TeamPage({
   const sp = await searchParams;
   const scenario = parseScenario(sp.scenario);
   const role = await getRole();
+  const session = await getSession(role);
 
-  if (role !== "owner") {
+  if (!canManageTeam(session)) {
     return (
       <div className="max-w-2xl mx-auto mt-8">
         <Card>

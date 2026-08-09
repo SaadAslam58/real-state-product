@@ -11,6 +11,7 @@ import {
 } from "@/lib/data";
 import { parseScenario } from "@/lib/data/scenarios";
 import { attentionFor, STAGE, STAGE_ORDER } from "@/lib/status";
+import { isOwner } from "@/lib/rbac";
 import {
   Avatar,
   Card,
@@ -283,7 +284,7 @@ export default async function LeadsPage({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="t-eyebrow mb-1.5">
-            {role === "owner" ? "All inquiries" : "Assigned to you"}
+            {isOwner(session) ? "All inquiries" : "Assigned to you"}
           </p>
           <h1 className="t-display text-xl text-ink">Leads</h1>
         </div>
@@ -314,7 +315,7 @@ export default async function LeadsPage({
             { value: "none", label: "No handoff" },
           ]}
         />
-        {role === "owner" ? (
+        {isOwner(session) ? (
           <FilterSelect
             paramKey="agent"
             label="Filter by agent"

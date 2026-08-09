@@ -13,6 +13,7 @@ import {
 } from "@/lib/data";
 import { parseScenario } from "@/lib/data/scenarios";
 import { attentionFor } from "@/lib/status";
+import { isOwner } from "@/lib/rbac";
 import {
   Avatar,
   Card,
@@ -102,7 +103,7 @@ export default async function DashboardPage({
       <div className="max-w-[1180px] mx-auto flex flex-col gap-6">
         <div>
           <p className="t-eyebrow mb-1.5">
-            {role === "owner" ? "Agency overview" : "Your leads"}
+            {isOwner(session) ? "Agency overview" : "Your leads"}
           </p>
           <h1 className="t-display text-xl text-ink">
             {greeting(now)}, {session.agent.name.split(" ")[0]}
@@ -243,7 +244,7 @@ export default async function DashboardPage({
 
         <div className="grid lg:grid-cols-[1.15fr_1fr] gap-6 items-start">
           {/* ── Per-agent snapshot ── */}
-          {role === "owner" ? (
+          {isOwner(session) ? (
             <section>
               <SectionHeading
                 eyebrow="team"
