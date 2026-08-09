@@ -1,0 +1,395 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GEHOX AGENCY DASHBOARD — DESIGN TOKENS
+
+   Two constraints shaped every value below.
+
+   1. Brand continuity. The client sees gehox.com and this dashboard side by
+      side, so the violet accent ramp is copied verbatim from the marketing
+      site. It is the one thing that must not drift.
+
+   2. Density. This is software someone reads for eight hours, not a landing
+      page they scroll once. So the neutral ground moves from the marketing
+      site's cool lavender-white (#F7F5F9) to a warm sand, and the marketing
+      display face (Bebas Neue — condensed all-caps) is dropped entirely.
+      Violet is a cool hue; a warm ground makes it read deliberate rather than
+      washed out, and it is easier on the eye across a long working day.
+
+   Contrast ratios in the comments are computed against `canvas` unless stated
+   otherwise, and every pairing used for text clears WCAG AA.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Neutrals: warm sand ────────────────────────────────────────────────
+     Hue ~35-40°, chroma kept very low so it reads as paper, not beige. Never
+     pure #FFF — a stark white panel on a warm ground looks like a bug. */
+  --color-canvas: #f6f3ee; /* app background */
+  --color-surface: #fdfbf8; /* cards, table bodies, panels */
+  --color-sunk: #f0ece5; /* table headers, inset wells, disabled fields */
+  --color-hairline: #e7e1d8; /* row rules, dividers */
+  --color-edge: #d8d0c4; /* input borders, structural borders */
+
+  --color-ink: #1c1917; /* primary text — 15.9:1 */
+  --color-ink-soft: #443e38; /* secondary headings, table body — 9.6:1 */
+  --color-muted: #6f6862; /* labels, metadata, timestamps — 4.95:1 */
+
+  /* The spine. A warm graphite, not a blue-grey and not black — it has to sit
+     next to warm paper without looking like a different product. */
+  --color-graphite: #26221f;
+  --color-graphite-soft: #332e2a;
+  --color-graphite-line: #3d3733;
+  --color-graphite-text: #b8b0a8;
+  /* Dimmest text allowed on the spine — 4.8:1 on graphite. Anything lighter
+     than this in weight goes below AA, which is how sidebar footers usually
+     end up unreadable. */
+  --color-graphite-dim: #968c83;
+
+  /* ── Accent: Gehox violet (verbatim from the marketing site) ───────────── */
+  --color-accent-ink: #2b0f54;
+  --color-accent: #471a79;
+  --color-accent-bright: #6411ad; /* primary action, links, focus — 8.5:1 */
+  --color-accent-hover: #7b22c9;
+  --color-accent-light: #c9a9f2; /* for use on dark violet only */
+  --color-accent-wash: #f0e9fa; /* selected row, active nav tint */
+
+  /* ── Lead stage. Mirrors STAGE in lib/status.ts — keep in sync. ─────────
+     Hue is never the only signal; each stage also carries a mark shape. */
+  --color-stage-new: #0f766e;
+  --color-stage-new-tint: #e4f1ef;
+  --color-stage-new-border: #bfddd8;
+
+  --color-stage-qualifying: #9a5b0b;
+  --color-stage-qualifying-tint: #f8eedd;
+  --color-stage-qualifying-border: #e6cfa6;
+
+  /* 4.87:1 on its own tint. #15803D measured 4.35 — under AA for badge text. */
+  --color-stage-ready: #15773a;
+  --color-stage-ready-tint: #e5f2e8;
+  --color-stage-ready-border: #bfddc7;
+
+  --color-stage-closed: #6f6862;
+  --color-stage-closed-tint: #efebe5;
+  --color-stage-closed-border: #dcd5cb;
+
+  /* ── Attention: ember. The second axis. ─────────────────────────────────
+     Orange-red, deliberately NOT the rose below. A red banner says "you did
+     something wrong". An ember rule says "someone is waiting". A cooling lead
+     is the second thing, and the brief is explicit that it must feel urgent
+     without looking like an error state. */
+  --color-ember: #b4470f;
+  --color-ember-tint: #fbede3;
+  --color-ember-border: #e8c4a6;
+
+  /* ── Feedback ───────────────────────────────────────────────────────────── */
+  --color-danger: #be123c; /* failure + destructive confirm ONLY */
+  --color-danger-tint: #fdeaef;
+  --color-danger-border: #f2c2ce;
+  --color-success: #15803d;
+  --color-success-tint: #e5f2e8;
+
+  /* ── Type ───────────────────────────────────────────────────────────────
+     display  Bricolage Grotesque — page titles, KPI numerals, card headings.
+              Characterful, ties to the brand, legible far below Bebas Neue.
+     sans     Inter — everything dense. Tabular numerals switched on globally
+              so a column of prices lines up.
+     mono     JetBrains Mono — phone numbers, references, timestamps, IDs.
+              A real mono, unlike the marketing site where --font-mono is
+              aliased to a display face. */
+  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", monospace;
+
+  --text-2xs: 0.6875rem; /* 11px — table micro-labels, badge text */
+  --text-xs: 0.75rem; /* 12px — metadata, timestamps */
+  --text-sm: 0.8125rem; /* 13px — table body. The workhorse size. */
+  --text-base: 0.875rem; /* 14px — form inputs, body copy */
+  --text-md: 1rem; /* 16px — card headings */
+  --text-lg: 1.125rem; /* 18px — section titles */
+  --text-xl: 1.375rem; /* 22px — page titles */
+  --text-2xl: 1.75rem; /* 28px — KPI numerals */
+  --text-3xl: 2.25rem; /* 36px — auth headline */
+  --text-4xl: 3rem; /* 48px — onboarding headline */
+
+  /* ── Spacing: 4px base ──────────────────────────────────────────────────── */
+  --spacing: 0.25rem;
+
+  /* ── Radius ─────────────────────────────────────────────────────────────── */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+
+  /* ── Elevation: exactly three. Static content gets none. ────────────────
+     Shadow tinted with the warm ink rather than pure black, or it goes grey
+     and muddy against sand. */
+  --shadow-raised:
+    0 1px 2px rgba(28, 25, 23, 0.06), 0 4px 12px -6px rgba(28, 25, 23, 0.1);
+  --shadow-overlay: 0 24px 48px -16px rgba(28, 25, 23, 0.24);
+
+  /* ── Motion. Short and few. A dashboard that animates is a dashboard that
+     wastes your time. The one exception is the overdue pulse. ────────────── */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Tabular figures everywhere by default. In a dashboard full of counts,
+     prices, and clocks, proportional digits make columns wobble as values
+     change — which is exactly when you are trying to read them. */
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: var(--color-accent-bright);
+  color: #fff;
+}
+
+/* Inherited from the marketing site, unchanged. Visible keyboard focus is
+   non-negotiable and must never be removed for aesthetics. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-bright);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* On the graphite spine the violet ring disappears into the dark. */
+.on-graphite :focus-visible {
+  outline-color: var(--color-accent-light);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-edge);
+  border-radius: 999px;
+  border: 3px solid var(--color-canvas);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c4baab;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TYPE ROLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.t-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+/* Small caps label above a section or card. The one piece of marketing-site
+   grammar that survives into the product, because it is genuinely useful for
+   labelling a region without spending a heading level on it. */
+.t-eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  line-height: 1;
+}
+
+.t-mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: -0.01em;
+}
+
+/* Big numbers on KPI tiles. Display face, tightened, so 47 reads as a fact
+   rather than as a font size. */
+.t-metric {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--text-2xl);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE SPINE
+
+   The one real design risk, at two scales:
+   - the sidebar spine: a warm graphite rail, active item marked by a violet
+     notch cut into its inner edge rather than a floating pill;
+   - the conversation spine: a rail down the middle of a thread that changes
+     from violet to ember at the exact turn where the AI handed off.
+
+   They are the same idea, which is what makes it read as a system rather than
+   as two unrelated flourishes.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The notch. A 3px violet bar flush to the spine's inner edge, plus a soft
+   bloom so it registers peripherally without a border box. */
+.spine-active {
+  position: relative;
+  background: var(--color-graphite-soft);
+}
+.spine-active::before {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-hover),
+    var(--color-accent-bright)
+  );
+  box-shadow: -6px 0 16px -4px rgba(123, 34, 201, 0.55);
+}
+
+/* The conversation rail. Violet while the AI holds the thread; ember from the
+   handoff turn onward. */
+.rail-ai {
+  background: linear-gradient(
+    180deg,
+    var(--color-accent-bright),
+    var(--color-accent)
+  );
+}
+.rail-human {
+  background: linear-gradient(180deg, var(--color-ember), #93380b);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@layer components {
+  /* Primary action. Same gradient as the marketing site's .btn-primary, scaled
+     down for UI density. One per screen — that is what makes it mean anything. */
+  .btn-primary {
+    background: linear-gradient(
+      120deg,
+      var(--color-accent-ink) 0%,
+      var(--color-accent) 50%,
+      var(--color-accent-bright) 100%
+    );
+    color: #fff;
+    box-shadow:
+      0 6px 16px -8px rgba(100, 17, 173, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  }
+  .btn-primary:hover:not(:disabled) {
+    box-shadow:
+      0 10px 22px -8px rgba(100, 17, 173, 0.6),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0.5px);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOTION
+
+   One animation in the entire product: the overdue-handoff dot. Slow (3s),
+   low-amplitude, and it stops for anyone who asked their OS to stop it.
+   A fast blink would read as an error; this reads as a heartbeat.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes ember-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(180, 71, 15, 0.4);
+  }
+  50% {
+    opacity: 0.85;
+    box-shadow: 0 0 0 5px rgba(180, 71, 15, 0);
+  }
+}
+
+.pulse-ember {
+  animation: ember-pulse 3s var(--ease-out-soft) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skeletons — a slow sheen over sunk, not a grey blink. */
+@keyframes skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-sunk) 25%,
+    #e9e4db 50%,
+    var(--color-sunk) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Tables that stay readable while a sticky header holds position. */
+.table-sticky-head th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-sunk);
+}
+
+/* Long addresses and Arabic contact names both want this. */
+.truncate-1 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
